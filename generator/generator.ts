@@ -70,7 +70,7 @@ export class Generator {
     console.log("Parse completed!");
   }
 
-  private buildMethodDefination(mt: ParsedNativeMethod) {
+  private buildMethodDefinition(mt: ParsedNativeMethod) {
     const builder = new LuaDefinationBuilder()
         .header(mt.category, mt.apiSet, mt.hash)
         .description(mt.description);
@@ -92,18 +92,26 @@ export class Generator {
         .build();
   }
 
-  private async generateCategoryDefinationFile(
+  private async generateCategoryDefinitionFile(
       category: string,
       methods: ParsedNativeMethod[],
   ) {
     const lines = "---@meta\n" +
-        methods.map((mt) => this.buildMethodDefination(mt)).join("\n\n");
+        methods.map((mt) => this.buildMethodDefinition(mt)).join("\n\n");
 
-    const definationFile =
-        `./addon/library/natives/${this.type}/${category}.lua`;
-    console.log(`Generating ${definationFile}...`);
 
-    fs.writeFileSync(definationFile, lines);
+    const folder = `./addon/library/natives/${this.type}`;
+
+    if (!fs.existsSync(folder)) {
+      fs.mkdirSync(folder, {
+        recursive: true
+      })
+    }
+
+    const destinationFile = `${folder}/${category}.lua`;
+    console.log(`Generating ${destinationFile}...`);
+
+    fs.writeFileSync(destinationFile, lines);
   }
 
   public async generate() {
@@ -111,7 +119,7 @@ export class Generator {
     await this.parseNatives();
 
     this.parsedCategories.forEach((methods, category) => {
-      this.generateCategoryDefinationFile(category, methods);
+      this.generateCategoryDefinitionFile(category, methods);
     });
 
     console.log("Generation completed!");
